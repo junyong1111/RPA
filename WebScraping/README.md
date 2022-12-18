@@ -92,3 +92,110 @@
     ```html
     <a href = "https://github.com/junyong1111/Web/blob/main/Project/Hotel/2022-03-01-Html-기본문법.md">html기본 문법 정리페이지로 이동하기</a>
     ```
+### 2. XPATH
+
+- html문서는 보통 복잡한 요소들로 구성되어있다.
+- 특정요소의 경로로 연결할 때 사용
+    - 비슷한 요소를 지칭할 때 어떠한 요소를 호출하는지 명시해야함
+    - 브라우저가 자동으로 알아서 해주므로 따로 걱정x
+    - Chrome 브라우저 사용
+    
+
+### 3. Requests
+
+- 웹페이지 문서 정보를 가져올 때 사용하는 라이브러리
+- 다음 명령어를 터미널에 입력하여 라이브러리 설치
+
+```bash
+pip install requests
+```
+
+- 2_Requests_basic.py 파일 생성
+
+### 4. 정규식
+
+```python
+#-- requests 라이브러리 import 
+import requests
+
+#-- requests.get("URL") 함수를 이용하여 원하는 웹페이지 정보 가져오기
+res = requests.get("URL")
+
+print("응답코드 확인 ", res.status_code) #-- 200이면 정상
+res.raise_for_status() #-- 올바르게 데이터를 가져오지 못하면 에러 발생
+
+#-- 가져온 정보텍스트 길이 확인
+print(len(res.text))
+
+#-- 파일로 저장하여 확인
+with open("./myUrl.html", "w", encoding= 'utf8') as f:
+    f.write(res.text)
+```
+
+- 정해진 형태의 식
+    - 주민등록번호
+        - 000123 - 1xxxxxx
+        - abcdef - bbbccc → 이런건 주민번호 형식이 아님
+    - 핸드폰 번호
+        - 010-xxxx-xxxx
+    - 이메일 주소
+        - 이메일주소@mail.com
+- 3_[**re.py](http://re.py) 파일 생성**
+    
+    ```python
+    #-- 정규식 라이브러리 import
+    import re
+    
+    #-- 4개의 문자 중 3개만 기억이 남 --> ca?e
+    
+    pattern = re.compile("ca.e") 
+    #-- . (ca.e) : 하나의 문자를 의미 --> care, cafe, case...(O) | caffe(X) 등등
+    #-- ^ (^de) : 문자열의 시작  --> desk, destination...(O)  | fade(X) 등등 de로 시작하는 문자열을 의미
+    #-- $ (se$) : 문자열의 끝 --> case, base... (O) | face(X) 등등 문자열의 끝이 se로 끝나는 것
+    
+    #-- 매치되지 않다면 에러가 발생
+    def print_matchs(matchs):
+        if matchs: 
+            print("matchs.group() :", matchs.group()) #-- 일치하는 문자열 반환
+            print("matchs.string :", matchs.string) #-- 입력받은 문자열 반환
+            print("matchs.start() :", matchs.start()) #-- 일치하는 문자열의 시작 Index
+            print("matchs.end() : ", matchs.end()) #-- 일치하는 문자열의 끝 Index
+            print("matchs.span() : ", matchs.span()) #-- 일치하는 문자열의 시작/끝 Index
+        else:
+            print("Not Match")  
+    
+    #-- 비교하는 값이 처음부터 매치되는지 확인
+    matchs = pattern.match("caseless") 
+    print_matchs(matchs)
+    
+    #-- 주어진 문자열 중에 일치하는게 있는지 확인
+    matchs = pattern.search("good care")
+    print_matchs(matchs)
+    
+    #-- 일치하는 모든것을 리스트형태로 반환
+    matchsList = pattern.findall("good care case")
+    print(matchsList)
+    ```
+    
+
+### 5. User Agent
+
+- 사람이 아닌 컴퓨터가 무단으로 접속시 거부가 날 수 있음
+- 해당 사이트에서 자신의 User Agent 값 확인 후 복사
+
+[](https://www.whatismybrowser.com/detect/what-is-my-user-agent/)
+
+- 4_UserAgent[**.py](http://re.py) 파일 생성**
+
+```python
+import requests
+url = "https://ceo.yapen.co.kr/"
+headers = {"User-Agent" : "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36"}
+
+res = requests.get(url, headers= headers)
+print("응답코드 확인 ", res.status_code)
+res.raise_for_status() 
+
+with open("./yapendata.html", "w", encoding= 'utf8') as f:
+    f.write(res.text)
+```
