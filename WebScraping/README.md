@@ -199,3 +199,147 @@ res.raise_for_status()
 with open("./yapendata.html", "w", encoding= 'utf8') as f:
     f.write(res.text)
 ```
+
+### 6. Beautiful Soup4
+
+- 해당 명령어를 터미널에서 실행하여 beautifulsoup4 라이브러리 설치
+- 해당 명령어를 터미널에서 실행하여 lxml 라이브러리 설치
+    - 어떤 구문을 분석하는 parser
+
+```bash
+pip install beautifulsoup4
+pip install lxml
+```
+
+- **5_bs4.py 파일 생성**
+    
+    ```python
+    import requests
+    from bs4 import BeautifulSoup as bs
+    
+    url = "https://ceo.yapen.co.kr/"
+    res = requests.get(url)
+    res.raise_for_status()
+    
+    soup =  bs(res.text, "lxml")
+    # print(soup.title) #-- 타이틀 정보가져오기 
+    # print(soup.title.get_text()) #-- 타이틀에 텍스트만 가져오기
+    # print(soup.a.attrs)
+    
+    info = soup.find("input", attrs={ "class": "yapen-loginInput"})
+    print(info.attrs)
+    
+    #-- 다음 형제로 넘어가기
+    info = info.next_sibling
+    info = info.find.next_sibling("원하는 태그")
+    #-- 이전 형제로 넘어가기
+    info = info.previous.sibling
+    ```
+    
+
+**네이버웹툰에서 원하는 정보 빼오기**
+
+- 6_bs4_webtoon.py 파일 생성
+    
+    ```python
+    import requests
+    from bs4 import BeautifulSoup as bs
+    
+    url = "https://comic.naver.com/webtoon/weekday"
+    res = requests.get(url)
+    res.raise_for_status()
+    
+    #-- 네이버 웹툰 전체 목록 가져오기
+    soup = bs(res.text, "lxml")
+    #-- class 속성이 title인 모든 'a', 요소들을 반환
+    cartoons = soup.find_all("a", attrs={"class" : "title"})
+    for cartoon in cartoons:
+        title = cartoon.get_text()
+        link = "https://comic.naver.com" + cartoon["href"]
+        print(title, link)
+    ```
+    
+
+**무신사에서 원하는 정보 빼오기**
+
+- 쿠팡은 크롤링 차단…
+- 7_bs4_musinsa.py 파일 생성
+- 무신사 숏패딩 중 시즌오프 상품들만 찾아보기
+    
+    ```python
+    import re
+    import requests
+    from bs4 import BeautifulSoup as bs
+    
+    headers = {"User-Agent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Safari/605.1.15"}
+    
+    for i in range(1,6):
+        print("현재 페이지 :",i )
+        url = "https://www.musinsa.com/categories/item/002012?d_cat_cd=002012&brand=&list_kind=small&sort=pop_category&sub_sort=&page={}&display_cnt=90&group_sale=&exclusive_yn=&sale_goods=&timesale_yn=&ex_soldout=&kids=&color=&price1=&price2=&shoeSizeOption=&tags=&campaign_id=&includeKeywords=&measure=".format(i)
+        
+        res = requests.get(url, headers= headers)
+        res.raise_for_status()
+        soup = bs(res.text, "lxml")
+    
+        items = soup.find_all("li", attrs= {"class":re.compile("^li_box")})
+        for item in items:
+            sale_badge = item.find("span", attrs= {"class":"icon-reverse label-campaign01"})
+            if sale_badge :
+                print("시즌 오프 상품")
+                itemTitle =  item.find("a", attrs = {"class":"img-block"})
+                itemPrice = item.find("div", attrs = {"class":"article_info"})
+                # print(item)
+                title = itemTitle['title']
+                prices = itemPrice.find("p",attrs = {"class":"price"}).get_text().replace(" " , "").strip().splitlines()
+                if len(prices) >1:
+                    price = prices[0]
+                    saleprice = prices[1]
+                else:
+                    price =prices[0]
+                    saleprice = "세일 가격 없음"
+                
+                link = itemTitle["href"]
+                link = link[2:-1]
+            
+                print("제품명 : ", title)
+                print("세일전 가격 : ", price)
+                print("세일 가격 : ",saleprice)
+                print("상품 링크 : " ,link)
+                print("-"*100)
+    ```
+    
+
+**최신영화 이미지 가져오기**
+
+- 8_bs4_movie.py 파일 생성
+    
+    ```python
+    import re
+    import requests
+    from bs4 import BeautifulSoup as bs
+    
+    headers = {"User-Agent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Safari/605.1.15"}
+    url = "https://search.naver.com/search.naver?where=nexearch&sm=tab_etc&qvt=0&query=2022%EB%85%84%20%EC%98%81%ED%99%94%20%EC%88%9C%EC%9C%84"
+    res = requests.get(url,headers=headers)
+    res.raise_for_status()
+    soup =  bs(res.text, "lxml")
+    
+    images = soup.find_all("div", attrs ={"class":"thumb"})
+    # images = soup.find_all("li")
+    for idx, image in enumerate (images):
+        try : 
+            title = image.find("img")["alt"]
+        except : 
+            title = "Title 없음"
+            
+        imageUrl = image.find("img")["src"]
+        if title :
+            print(title)
+        imgRes = requests.get(imageUrl)
+        imgRes.raise_for_status()
+        
+        with open("rank_{}_{}_.jpg".format(idx+1,title), "wb") as f:
+            f.write(imgRes.content) #-- 파일이 가지고 있는 정보를 씀
+            if idx == 4:
+                break
+    ```
