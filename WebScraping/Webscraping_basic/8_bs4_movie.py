@@ -2,7 +2,8 @@ import re
 import requests
 from bs4 import BeautifulSoup as bs
 
-headers = {"User-Agent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Safari/605.1.15"}
+headers = {"User-Agent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Safari/605.1.15",
+           "Accept-Language":"ko-KR, ko"}
 url = "https://search.naver.com/search.naver?where=nexearch&sm=tab_etc&qvt=0&query=2022%EB%85%84%20%EC%98%81%ED%99%94%20%EC%88%9C%EC%9C%84"
 res = requests.get(url,headers=headers)
 res.raise_for_status()

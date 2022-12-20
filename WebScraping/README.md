@@ -343,3 +343,125 @@ pip install lxml
             if idx == 4:
                 break
     ```
+
+### 7. CSV로 저장
+
+네이버 금융에서 시가총액 순위로 200위까지를 CSV파일로 저장하기 
+
+- 9_csv_stock.py 파일 생성
+
+### 8. Selenium
+
+- 웹페이지 테스트를 자동화할 수 있는 유명한 프레임워크
+- 현재까지 배운 내용으로는 디테일한 작업이 불가능하므로 셀레니움을 사용하여 해결
+- 다음 명령어를 사용하여 selenium 설치
+    
+    ```bash
+    pip install selenium
+    pip install webdriver_manager
+    ```
+    
+- **셀레니움 사용시 추가적으로 웹 드라이버를 설치해야함**
+    - 현재 4.x 버전으로 업그레이드 되면서 코드로 설치 가능
+- ~~맥 사용시 해당 드라이버 폴더로 이동 후 다음 명령어 실행~~
+    
+    ```bash
+    ~~xattr -d com.apple.quarantine chromedriver~~
+    ```
+    
+- ~~while문을 사용하여 크롬드라이버가 꺼지는걸 방지해야함~~
+- ~~코드를 확인하기 위해서는 터미널에서 한 줄씩 사용하는걸 추천~~
+    
+    ```python
+    import time
+    from selenium import webdriver
+    from selenium.webdriver.common.by import By
+    from webdriver_manager.chrome import ChromeDriverManager
+    from selenium.webdriver.chrome.service import Service
+    
+    chrome_options = webdriver.ChromeOptions()
+    browser = webdriver.Chrome(service=Service(ChromeDriverManager().install()),options=chrome_options)
+    #-- 다음 코드들로 자동으로 설치 가능
+    ```
+    
+- 셀레니움 명령어 문서
+
+[https://wikidocs.net/177133](https://wikidocs.net/177133)
+
+```python
+import time
+from selenium.webdriver.common.keys import Keys
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from webdriver_manager.chrome import ChromeDriverManager
+from selenium.webdriver.chrome.service import Service
+
+chrome_options = webdriver.ChromeOptions()
+browser = webdriver.Chrome(service=Service(ChromeDriverManager().install()),options=chrome_options)
+browser.get("https://www.naver.com")
+
+browser.find_element(By.ID, "id").send_keys("ID")
+#-- 입력 데이터 지우기
+browser.find_element(By.ID, "id").clear()
+browser.find_element(By.ID, "id").send_keys("ID")
+
+browser.find_element(By.ID, "pw").send_keys("PW")
+browser.find_element(By.ID, "pw").send_keys(Keys.ENTER)
+
+#-- html 정보 출력
+
+print(browser.page_source)
+# browser.close() #-- 현재 탭만 종료
+browser.quit() #-- 브라우저 전체 종료
+
+time.sleep(5.0)
+```
+
+**—# 로딩때문에 셀레니움이 원하는 데이터를 조회 못할 수 있다 이 때 다음과 같은 코드를 사용**
+
+```python
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.ui import WebDriverWait as wait
+
+try:
+	elem = wait(browser, 10).until(EC.element_to_be_clickable((By.XPATH, "Xpath"))).click()
+	#-- 이 값에 해당하는 요소가 나올때까지 최대 10초간 브라우저를 대기 후 클릭하기
+	print(elem.text) #-- 결과값 출력
+except:
+	borswer.quit()
+```
+
+—# 셀레니움으로 자바스크립트를 제어해서 스크롤 내리기
+
+```python
+import time
+from selenium import webdriver
+
+chrome_options = webdriver.ChromeOptions()
+browser = webdriver.Chrome(service=Service(ChromeDriverManager().install()),options=chrome_options)
+browser.get("https://www.naver.com"
+#-- 2초에 한 번씩
+interval = 2
+
+prev_height = browser.ececute_script("return  document.body.scrollHeight)")
+
+while True:
+	#-- 화면 가장 아래쪽으로 스크롤 내리기
+	browser.execute_script("window.scrollTo(0, document.body.scrollHeight)")
+	time.sleep(interval)
+	
+	#-- 현재 높이 업데이트
+	curr_height = browser.ececute_script("return  document.body.scrollHeight)")
+	#-- 높이 변화가 없다면 종료
+	if curr_height == prev_height:
+		break
+	prev_height = curr_height
+```
+
+—# 브라우저에서 바로 soup객체 만들기
+
+```python
+soup =  bs(browser.page_source, "lxml")
+```
